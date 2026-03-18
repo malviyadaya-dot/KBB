@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaun Banega Bhikari (KBB)</title>
+    <style>
+        body { margin: 0; padding: 0; background: radial-gradient(circle, #1a0b2e 0%, #000000 100%); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; perspective: 1000px; }
+        .hidden { display: none !important; }
+        
+        /* --- PRE-INTRO (CLICK TO ENTER) --- */
+        #pre-intro { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; cursor: pointer; color: #ffd700; text-align: center; }
+        .tap-text { font-size: 2.5rem; font-weight: bold; animation: blink 1s infinite; text-shadow: 2px 2px 10px red; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* --- Intro Screen Styles --- */
+        #intro-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1a0b2e 0%, #000000 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; transition: opacity 0.5s ease-out; transform-origin: center center; }
+        .intro-header-area { display: flex; align-items: center; gap: 40px; margin-bottom: 40px; }
+        
+        /* --- 3D Stamp Styling --- */
+        .stamp-container { perspective: 800px; display: flex; align-items: center; justify-content: center; }
+        .stamp { width: 150px; height: 150px; background-color: #b30000; border: 6px solid #ffd700; border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 10px; transform-style: preserve-3d; opacity: 0; }
+        .stamp-animate { animation: stampIn 0.7s ease-out forwards; }
+        .stamp-text { color: #ffd700; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; text-align: center; transform: translateZ(15px); text-shadow: 2px 2px 5px rgba(0,0,0,0.8); line-height: 1.2; }
+        
+        @keyframes stampIn {
+            0% { opacity: 0; transform: scale(8) translateY(-500px) rotateX(45deg) rotateY(20deg); box-shadow: 0 100px 50px rgba(0,0,0,0); }
+            30% { opacity: 1; transform: scale(1) translateY(0px) rotateX(0deg) rotateY(0deg); box-shadow: 0 50px 30px rgba(0,0,0,0.3); }
+            35% { transform: scale(0.85, 0.95) translateY(10px); box-shadow: 0 0px 5px rgba(0,0,0,0.9); }
+            50% { transform: scale(1.1) translateY(-10px); box-shadow: 0 20px 15px rgba(0,0,0,0.5); }
+            70% { transform: scale(0.95) translateY(5px); }
+            100% { opacity: 1; transform: scale(1) translateY(0px); box-shadow: 5px 5px 15px rgba(0,0,0,0.7); }
+        }
+        
+        @keyframes vibrateBody {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            10% { transform: translate(-20px, -20px) rotate(-2deg) scale(1.02); }
+            20% { transform: translate(25px, 20px) rotate(3deg) scale(1.02); }
+            30% { transform: translate(-20px, 25px) rotate(-3deg) scale(1.01); }
+            40% { transform: translate(15px, -15px) rotate(2deg) scale(1.01); }
+            50% { transform: translate(-10px, -10px) rotate(-1deg); }
+            60% { transform: translate(10px, 10px) rotate(1deg); }
+            70% { transform: translate(-5px, 5px) rotate(0deg); }
+            80% { transform: translate(5px, -5px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+        }
+        
+        #start-button { padding: 15px 40px; font-size: 1.5rem; background-color: #ffd700; color: black; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.2s; opacity: 0; margin-top: 20px; }
+        #start-button:hover { background-color: white; transform: scale(1.05); }
+        .show-button { opacity: 1 !important; animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* --- Main Game Styles --- */
+        .main-container { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; position: relative; }
+        .sidebar { flex: 1; background-color: #0b041c; border-left: 2px solid #ffd700; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+        .logo { font-size: 4rem; font-weight: bold; color: #ffd700; text-align: center; text-shadow: 2px 2px 4px red; }
+        
+        /* --- TIK-TIKI JI (TIMER) STYLES --- */
+        .header-area { display: flex; justify-content: space-between; align-items: center; width: 80%; margin-bottom: 20px; }
+        .game-logo { font-size: 3rem; margin: 0; }
+        #tik-tiki { font-size: 2.5rem; font-weight: bold; color: white; background: #ff4444; border: 4px solid #ffd700; border-radius: 50%; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px #ff4444; transition: transform 0.1s; }
+        .hurry-up { animation: pulse 0.5s infinite; background: #b30000 !important; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* --- FLYING TAUNT --- */
+        #flying-taunt { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: #ffd700; color: black; padding: 10px 25px; border-radius: 30px; font-weight: bold; font-size: 1.2rem; border: 3px solid #ff4444; box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 50; opacity: 0; transition: opacity 0.3s, top 0.3s; pointer-events: none; }
+        .show-taunt { opacity: 1 !important; top: 120px !important; }
+
+        .tagline { font-size: 1.2rem; color: #ff4444; margin-bottom: 50px; font-style: italic; text-align: center; }
+        .question-box { background: linear-gradient(90deg, transparent, #001f52, #001f52, transparent); border: 2px solid #ffd700; border-radius: 50px; padding: 20px 40px; font-size: 1.5rem; text-align: center; width: 80%; margin-bottom: 40px; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 80%; }
+        .option { background: linear-gradient(90deg, transparent, #001f52, #001f52, transparent); border: 2px solid #ffd700; border-radius: 50px; padding: 15px 30px; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease; text-align: left; }
+        .option:hover { background: linear-gradient(90deg, transparent, #ff8c00, #ff8c00, transparent); }
+        .option span { color: #ffd700; font-weight: bold; margin-right: 15px; }
+        .debt-level { padding: 10px; font-size: 1.2rem; margin: 5px 0; text-align: right; border-radius: 5px; color: #ffaa00; }
+        .active-level { background-color: #ff4444; color: white; font-weight: bold; }
+        
+        /* --- Custom Roast Popup --- */
+        #roast-popup { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 30; }
+        .popup-content { background: linear-gradient(135deg, #4b0000, #1a0000); border: 3px solid #ff4444; border-radius: 20px; padding: 40px; text-align: center; max-width: 500px; box-shadow: 0px 0px 30px #ff4444; }
+        .popup-text { font-size: 1.5rem; color: #ffd700; margin-bottom: 30px; font-weight: bold; }
+        .popup-btn { padding: 10px 30px; font-size: 1.2rem; background-color: #ffd700; color: black; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .popup-btn:hover { background-color: white; }
+
+        /* --- Result Screen --- */
+        #result-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; text-align: center; padding: 20px;}
+        .result-btn { padding: 10px 30px; font-size: 1.2rem; background-color: #ffd700; color: black; border: none; border-radius: 10px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        .result-btn:hover { background-color: white; }
+
+        /* --- CREATOR TAG --- */
+        .creator-tag { position: fixed; bottom: 15px; right: 20px; color: #ffd700; font-size: 1.2rem; font-weight: bold; font-family: 'Courier New', Courier, monospace; opacity: 0.6; z-index: 100; text-shadow: 2px 2px 4px #000; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <audio id="audio-intro" src="kbb_intro.mp3"></audio>
+    <audio id="audio-gunshot" src="kbb_gunshot.mp3"></audio>
+    <audio id="audio-sahi" src="kbb_sahi.mp3"></audio>
+    <audio id="audio-galat" src="kbb_galat.mp3"></audio>
+    <audio id="audio-end" src="kbb_end.mp3"></audio>
+    <audio id="audio-hurry" src="kbb_hurry.mp3"></audio> 
+
+    <div id="pre-intro" onclick="triggerIntro()">
+        <div class="tap-text">TAP ANYWHERE TO ENTER</div>
+        <div style="font-size: 1rem; margin-top: 20px; color: white;">(Sound On Zaroori Hai!)</div>
+    </div>
+
+    <div class="creator-tag">MADE BY SANKET MALVIYA</div>
+
+    <div id="intro-screen">
+        <div class="intro-header-area">
+            <div class="logo">KBB</div>
+            <div class="stamp-container">
+                <div class="stamp" id="main-stamp">
+                    <div class="stamp-text">ONLY<br>AMBANI<br>KA BAAP<br>ARE ALLOWED</div>
+                </div>
+            </div>
+        </div>
+        <p class="tagline">"Kaun Banega Bhikari - Yahan aate hain lene, par padte hain dene!"</p>
+        <button id="start-button" onclick="startGame()">Hotseat Par Aaiye!</button>
+    </div>
+
+    <div class="main-container hidden" id="game-screen">
+        <div id="flying-taunt">Bhai jaldi kar, yahan background music ka bill tera baap bharega kya?</div>
+        
+        <div class="header-area">
+            <div class="logo game-logo">KBB</div>
+            <div id="tik-tiki">30</div>
+        </div>
+
+        <div class="question-box" id="question-text">Question load ho raha hai...</div>
+        <div class="options-grid">
+            <div class="option" onclick="processAnswer(0)"><span id="optA-lbl">A:</span> <span id="optA" style="color: white; font-weight: normal;">Option A</span></div>
+            <div class="option" onclick="processAnswer(1)"><span id="optB-lbl">B:</span> <span id="optB" style="color: white; font-weight: normal;">Option B</span></div>
+            <div class="option" onclick="processAnswer(2)"><span id="optC-lbl">C:</span> <span id="optC" style="color: white; font-weight: normal;">Option C</span></div>
+            <div class="option" onclick="processAnswer(3)"><span id="optD-lbl">D:</span> <span id="optD" style="color: white; font-weight: normal;">Option D</span></div>
+        </div>
+    </div>
+
+    <div class="sidebar hidden" id="sidebar">
+        <h2 style="text-align: right; color: #ff4444; margin-bottom: 20px;">AAPKA UDHAAR</h2>
+        <div class="debt-level" id="level-4">- ₹ 7,00,00,000</div>
+        <div class="debt-level" id="level-3">- ₹ 50,00,000</div>
+        <div class="debt-level" id="level-2">- ₹ 3,20,000</div>
+        <div class="debt-level" id="level-1">- ₹ 10,000</div>
+        <div class="debt-level" id="level-0">- ₹ 1,000</div>
+    </div>
+
+    <div id="roast-popup" class="hidden">
+        <div class="popup-content">
+            <div id="roast-text" class="popup-text">Computer Ji ka Sandesh yahan aayega</div>
+            <button class="popup-btn" onclick="nextQuestion()">Agla Sawal Jhelo</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h1 id="result-title" style="font-size: 3rem; color: #ffd700; max-width: 800px;">"Arre bhai aap to piche he pad gaye yaar!"</h1>
+        <p id="result-message" style="font-size: 1.5rem; text-align: center; max-width: 600px; margin-top: 20px;">Message here</p>
+        <button class="result-btn" onclick="location.reload()">Ek aur baar lutiye!</button>
+    </div>
+
+    <script>
+        function playAudio(id) {
+            let audioObj = document.getElementById(id);
+            if (audioObj) {
+                audioObj.currentTime = 0;
+                let playPromise = audioObj.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => console.log("Audio block/missing:", e));
+                }
+            }
+        }
+
+        // Yeh function tab chalega jab player "TAP TO ENTER" pe click karega
+        function triggerIntro() {
+            // Pre-intro screen hata do
+            document.getElementById('pre-intro').classList.add('hidden');
+            
+            const stamp = document.getElementById('main-stamp');
+            const introScreen = document.getElementById('intro-screen');
+            const button = document.getElementById('start-button');
+            
+            // Stamp girna shuru
+            setTimeout(() => { stamp.classList.add('stamp-animate'); }, 100);
+            
+            // Dhadam se takrane par Gunshot bajega aur screen hilegi (100ms + 210ms)
+            setTimeout(() => { 
+                introScreen.style.animation = "vibrateBody 0.6s cubic-bezier(.36,.07,.19,.97) both"; 
+                playAudio('audio-gunshot'); // Ab bullet fire hogi bina ruke! 💥🔫
+            }, 310);
+            
+            // Start button show hoga
+            setTimeout(() => { button.classList.add('show-button'); }, 1000);
+        }
+
+        function startGame() {
+            playAudio('audio-intro'); 
+            const intro = document.getElementById("intro-screen");
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.classList.add("hidden");
+                document.getElementById("game-screen").classList.remove("hidden");
+                document.getElementById("sidebar").classList.remove("hidden");
+                loadQuestion();
+            }, 500); 
+        }
+
+        const allQuestions = [
+            { q: "Padhai karne baithne ke exactly 2 minute baad kya hota hai?", options: ["Jor se pyaas lagti hai", "Bathroom jana hota hai", "Neend aane lagti hai", "Upar diye gaye sabhi"], ans: 3 },
+            { q: "Exam paper milne ke baad sabse pehla khayal kya aata hai?", options: ["Main top karunga!", "Ye syllabus mein tha kya?", "Teacher ne galat paper de diya", "Pass hone layak toh aata hai"], ans: 1 },
+            { q: "Mummy ki sabse khatarnak dhamki kaunsi hai?", options: ["Khana kha le chup chap", "Papa ko aane de aaj", "Tution ja raha hai ki nahi?", "Phone chheen lungi"], ans: 1 },
+            { q: "Tiffin mein 'Tinda' ya 'Karela' dekh kar kaisi feeling aati hai?", options: ["Yummy!", "Aaj mera fast hai", "Dosto ka tiffin churaunga", "Zindagi barbad ho gayi"], ans: 3 },
+            { q: "Chhote bhai/behan ko galti se maarne ke baad kya dialogue nikalta hai?", options: ["Aur pitna hai?", "Mummy ko mat batana plss!", "Chup ho ja, main tujhe chocolate dunga!", "Rota reh mujhe kya"], ans: 2 },
+            { q: "Homework na karne ka sabse purana aur gisa-pita bahana kya hai?", options: ["Kutta copy kha gaya", "Copy ghar bhool gaya", "Light nahi thi sir", "Alien utha ke le gaye the"], ans: 1 },
+            { q: "Teacher jab class mein pooche 'Koi doubt hai?', tab kiska darr lagta hai?", options: ["Teacher ka", "Us topper ka jo ek aur sawal poochega", "Principal ka", "Dosto ka"], ans: 1 },
+            { q: "School bus ya van mein sabse VIP jagah kaunsi hoti hai?", options: ["Driver uncle ke paas", "Ekdum peechhe wali seat", "Window seat", "Khade rehne mein"], ans: 1 },
+            { q: "Jab papa bole 'Beta mera phone kahaan hai?', toh darr kyu lagta hai?", options: ["Screen toot gayi thi", "YouTube history dekh lenge", "Game delete kar denge", "B aur C dono"], ans: 3 },
+            { q: "BGMI ya Free Fire khelte waqt mummy awaz lagaye toh kya bolna padta hai?", options: ["Aa raha hu mummy!", "Game pause nahi hota mummy!", "Bas 2 minute, last banda bacha hai", "Headphone lagaye hain, sunai nahi diya"], ans: 2 }
+        ];
+
+        const questions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 5);
+        const debtAmounts = ["₹ 1,000", "₹ 10,000", "₹ 3,20,000", "₹ 50,00,000", "₹ 7,00,00,000"];
+        
+        let currentQuestionIndex = 0;
+        let currentDebtIndex = -1; 
+        
+        let timerInterval;
+        let timeLeft = 30;
+
+        function startTimer() {
+            timeLeft = 30;
+            const tikTiki = document.getElementById("tik-tiki");
+            const taunt = document.getElementById("flying-taunt");
+            
+            tikTiki.innerText = timeLeft;
+            tikTiki.classList.remove("hurry-up");
+            taunt.classList.remove("show-taunt");
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                tikTiki.innerText = timeLeft;
+
+                if (timeLeft === 15) {
+                    playAudio('audio-hurry');
+                    taunt.classList.add("show-taunt");
+                    setTimeout(() => taunt.classList.remove("show-taunt"), 4000); 
+                }
+
+                if (timeLeft <= 5) {
+                    tikTiki.classList.add("hurry-up");
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timeUpPenalty();
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            document.getElementById("question-text").innerText = questions[currentQuestionIndex].q;
+            document.getElementById("optA").innerText = questions[currentQuestionIndex].options[0];
+            document.getElementById("optB").innerText = questions[currentQuestionIndex].options[1];
+            document.getElementById("optC").innerText = questions[currentQuestionIndex].options[2];
+            document.getElementById("optD").innerText = questions[currentQuestionIndex].options[3];
+
+            for(let i=0; i<5; i++){
+                document.getElementById("level-"+i).classList.remove("active-level");
+            }
+            if (currentDebtIndex >= 0 && currentDebtIndex < 5) {
+                document.getElementById("level-"+currentDebtIndex).classList.add("active-level");
+            }
+            
+            startTimer(); 
+        }
+
+        function timeUpPenalty() {
+            currentDebtIndex++;
+            playAudio('audio-sahi'); 
+            let roastMsg = "Time Up! Sochne mein poori zindagi nikal dega kya? Computer Ji gussa ho gaye hain aur tera udhaar badh gaya: " + debtAmounts[currentDebtIndex] + " minus!";
+            
+            document.getElementById("roast-text").innerText = roastMsg;
+            document.getElementById("roast-popup").classList.remove("hidden");
+        }
+
+        function processAnswer(selectedOption) {
+            clearInterval(timerInterval); 
+            
+            let roastMsg = "";
+            
+            if (selectedOption === questions[currentQuestionIndex].ans) {
+                currentDebtIndex++;
+                playAudio('audio-sahi'); 
+                roastMsg = "Oh no! Ek aur sahi jawab! Padhai mein topper banne ke chakkar mein karza badha liya. " + debtAmounts[currentDebtIndex] + " minus!";
+            } else {
+                playAudio('audio-galat'); 
+                roastMsg = "Galat Jawab! Beta tumse na ho payega, lagta hai class mein dhyan nahi dete. Bach gaye is baar!";
+            }
+
+            document.getElementById("roast-text").innerText = roastMsg;
+            document.getElementById("roast-popup").classList.remove("hidden");
+        }
+
+        function nextQuestion() {
+            document.getElementById("roast-popup").classList.add("hidden");
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex >= questions.length) {
+                let finalDebt = (currentDebtIndex >= 0) ? debtAmounts[currentDebtIndex] : "₹ 0";
+                let title = `"Arre bhai aap to piche he pad gaye yaar!" 🤦‍♂️`;
+                let msg = "";
+
+                if (currentDebtIndex === -1) {
+                    msg = "Mubarak ho! Saare jawab galat! Ekdum backbencher wali performance, par udhaar ek paise ka nahi hua. Smart boy!";
+                } else {
+                    msg = `Hotseat se utarate waqt, aapke oopar ${finalDebt} ka karza chadh chuka hai. Kripya apne pocket money se chukta karein.`;
+                }
+                showResult(title, msg);
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function showResult(title, message) {
+            clearInterval(timerInterval); 
+            playAudio('audio-end'); 
+            document.getElementById("game-screen").classList.add("hidden");
+            document.getElementById("sidebar").classList.add("hidden");
+            document.getElementById("result-screen").classList.remove("hidden");
+            document.getElementById("result-title").innerText = title;
+            document.getElementById("result-message").innerText = message;
+        }
+    </script>
+</body>
+</html>
